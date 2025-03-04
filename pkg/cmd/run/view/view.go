@@ -650,6 +650,7 @@ func attachRunLog(rlz *zip.Reader, jobs []shared.Job) {
 
 func displayRunLog(w io.Writer, jobs []shared.Job, failed bool) error {
 	for _, job := range jobs {
+		fmt.Fprintf(w, "## %s\n\n", job.Name)
 		steps := job.Steps
 		sort.Sort(steps)
 		for _, step := range steps {
@@ -659,16 +660,17 @@ func displayRunLog(w io.Writer, jobs []shared.Job, failed bool) error {
 			if step.Log == nil {
 				continue
 			}
-			prefix := fmt.Sprintf("%s\t%s\t", job.Name, step.Name)
+			fmt.Fprintf(w, "### Step %s failed\n\n", step.Name)
 			f, err := step.Log.Open()
 			if err != nil {
 				return err
 			}
 			scanner := bufio.NewScanner(f)
 			for scanner.Scan() {
-				fmt.Fprintf(w, "%s%s\n", prefix, scanner.Text())
+				fmt.Fprintf(w, "%s\n", scanner.Text())
 			}
 			f.Close()
+			fmt.Fprintf(w, "\n")
 		}
 	}
 
